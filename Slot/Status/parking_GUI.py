@@ -292,13 +292,17 @@ def determine_occupancy(indexes, box):
                         slott[i][1]]) * 100
                     if perc_ED[slott[i][0]][slott[i][1]] < 75:
                         Status[slott[i][0]][slott[i][1]] = 'OCCUPIED'
-                        slot2Value += 1
                     else:
                         Status[slott[i][0]][slott[i][1]] = 'VACANT'
-                        slot3Value += 1
                 else:
                     Status[slott[i][0]][slott[i][1]] = 'VACANT'
-                    slot3Value += 1
+
+    for row in range(len(ROI_slot)):
+        for slots in range(len(ROI_slot[row])):
+            if Status[row][slots]=='OCCUPIED':
+                slot2Value += 1
+            else:
+                slot3Value += 1
 
     fontScale = 0.8
 
@@ -429,6 +433,16 @@ def select_image():
             panelA.image = image
             panelB.image = plottedImage
 
+            #text untuk hasil slot (total, occupied, dan vacant)
+            #Total slot
+            slot1Result = Label(text='= '+str(slot2Value+slot3Value), font=('Arial', 14), pady=10, fg='red')
+            slot1Result.grid(row=2, column=3)
+            #Occupied slot
+            slot2Result = Label(text='= '+str(slot2Value), font=('Arial', 14), pady=10, fg='red')
+            slot2Result.grid(row=3, column=3)
+            #Vacant slot
+            slot3Result = Label(text='= '+str(slot3Value), font=('Arial', 14), pady=10, fg='red')
+            slot3Result.grid(row=4, column=3)
 
 # initialize the window toolkit along with the two image panels
 root = Tk()
