@@ -22,6 +22,28 @@ frame6 = tk.Frame(root)
 
 gifFile = PhotoImage(Image.open('gifz.gif'))
 coordinateDict = {'Dummy','Masih dummy','Dummy lagi'}
+row = 0
+rowLabel = dict()
+rowEntry = dict()
+
+def addRow():
+    global row,rowLabel,rowEntry
+    if row == 10:
+        return None
+    row = row + 1
+    rowLabel[row] = Label(frame2,text='Jumlah slot baris ke-'+str(row)+'=',padx=10,pady=10,font=('Helvetica 10 bold'))
+    rowEntry[row] = Entry(frame2,bd=5)
+
+    rowLabel[row].grid(row=row+2,column=0)
+    rowEntry[row].grid(row=row+2,column=1)
+
+def delRow():
+    global row,rowLabel,rowEntry
+    if row == 0 :
+        return None
+    rowLabel[row].destroy()
+    rowEntry[row].destroy()
+    row = row - 1    
 
 def FRAME1():
     f1LabelJudul = Label(frame1, text='Aplikasi Pendeteksi Status Slot Parkir', padx=10, pady=10, fg='black', height=2, width=50, font=("Helvetica 16 bold"))
@@ -36,19 +58,18 @@ def FRAME1():
     frame1.grid(row=0, column=0)
 
 def FRAME2():
+    global rowLabel,rowEntry
     f2Btn1 = Button(frame2, text='Back', padx=10, pady=10, fg='black', height=1, width=5, font=("Helvetica 10 bold"))
     f2Label1 = Label(frame2, text="Masukkan jumlah slot parkir pada setiap barisnya",padx=10,pady=10,font=('Helvetica 12 bold'))
-    f2Btn2 = Button(frame2, text='Hapus baris', padx=10, pady=10, fg='black', height=1, width=10, font=("Helvetica 10 bold"))
-    f2Btn3 = Button(frame2, text='Tambah baris', padx=10, pady=10, fg='black', height=1, width=10, font=("Helvetica 10 bold"))
+    f2Btn2 = Button(frame2, text='Hapus baris', padx=10, pady=10, fg='black', height=1, width=10, font=("Helvetica 10 bold"),command=delRow)
+    f2Btn3 = Button(frame2, text='Tambah baris', padx=10, pady=10, fg='black', height=1, width=10, font=("Helvetica 10 bold"),command=addRow)
     f2Btn4 = Button(frame2, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15, font=("Helvetica 10 bold"))
-    f2Label2 = Label(frame2, text="NU IE ACAN",padx=10,pady=10,font=('Helvetica 12 bold'),height=10)
 
     f2Btn1.grid(row=0,column=0,padx=10,pady=10)
     f2Label1.grid(row=1,column=0,columnspan=4,padx=6,pady=6)
     f2Btn2.grid(row=2,column=0,padx=8,pady=8)
     f2Btn3.grid(row=2,column=1,padx=8,pady=8)
-    f2Btn4.grid(row=4,column=1,padx=8,pady=8)
-    f2Label2.grid(row=3,column=0)
+    f2Btn4.grid(row=50,column=1,padx=8,pady=8)
 
 
     frame2.grid(row=0,column=0)
@@ -99,7 +120,7 @@ def FRAME6():
 
 
 
-FRAME1()
+FRAME2()
 
 
 
