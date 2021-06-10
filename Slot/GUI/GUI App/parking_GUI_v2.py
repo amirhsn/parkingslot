@@ -28,7 +28,7 @@ rowLabel = dict()
 rowEntry = dict()
 
 def addRow():
-    global row,rowLabel,rowEntry,frame2
+    global row,rowLabel,rowEntry
     if row == 10:
         return None
     row = row + 1

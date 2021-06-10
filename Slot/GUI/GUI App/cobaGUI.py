@@ -19,6 +19,8 @@ rowEntry = {}
 panelA = None
 panelB = None
 rowValue = []
+path = ''
+ROISlot = []
 
 def select_image():
     global path
@@ -94,7 +96,6 @@ class Frame2(tk.Frame):
 
         rowLabel["%s"%row].grid(row=row+2,column=0)
         rowEntry["%s"%row].grid(row=row+2,column=1)
-
     def delRow(self):
         global row,rowLabel,rowEntry
         if row == 0 :
@@ -109,11 +110,7 @@ class Frame2(tk.Frame):
         global rowValue,rowEntry
         rowValue = [] 
         for i in range(len(rowEntry)):
-            rowValue.append(int(rowEntry["%s"%(i+1)].get()))
-        if len(rowValue) != 0:
-            self.f2Btn4["state"] = tk.NORMAL
-        else:
-            self.f2Btn4["state"] = tk.DISABLED    
+            rowValue.append(int(rowEntry["%s"%(i+1)].get()))  
         print(rowValue)
 
 
@@ -129,24 +126,16 @@ class Frame2(tk.Frame):
         f2Btn3 = tk.Button(self, text='Tambah baris', padx=10, pady=10, fg='black', height=1, width=10,
                         font=("Helvetica 10 bold"), command=self.addRow)
 
-        self.f2Btn4 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame3))
-        f2Btn5 = tk.Button(self, text='✓', padx=10, pady=10, fg='green', height=1, width=15,
-                        font=("Helvetica 10"), command = self.storeValue)
-
-        self.f2Btn4['state'] = tk.DISABLED
+        f2Btn4 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
+                        font=("Helvetica 10 bold"), command = lambda : [self.storeValue(), controller.show_frame(Frame3)])
 
         f2Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
         f2Label1.grid(row=1, column=0, columnspan=4, padx=6, pady=6)
         f2Btn2.grid(row=2, column=0, padx=8, pady=8,ipady=1, ipadx=10)
         f2Btn3.grid(row=2, column=1, padx=8, pady=8, ipady=1, ipadx=10)
-        self.f2Btn4.grid(row=13, column=1, padx=8, pady=8, ipady=1, ipadx=15)
-        f2Btn5.grid(row=13, column=0, padx=8, pady=8, ipady=1, ipadx=15)
+        f2Btn4.grid(row=13, column=1, padx=8, pady=8, ipady=1, ipadx=15)
 
 class Frame3(tk.Frame):
-    def getRowValue(self):
-        global rowValue
-        print(rowValue)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -160,10 +149,10 @@ class Frame3(tk.Frame):
 
 
         f3Btn2 = tk.Button(self, text='Upload gambar', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"))
+                        font=("Helvetica 10 bold"), command=select_image)
 
         f3Btn3 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame4))                
+                        font=("Helvetica 10 bold"), command=lambda : controller.show_frame(Frame4))                
 
         f3Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
 
@@ -181,18 +170,39 @@ class Frame3(tk.Frame):
         canvas.grid(row=1,column=2)
         gifFile = PhotoImage(file="C:\\Users\\LENOVO\\ParkingSlot\\Slot\\GUI\\GUI App\\gifz.gif")
         canvas.create_image(0,0, anchor = NW, image=gifFile)
-
 class Frame4(tk.Frame):
+    def getROISlot(self):
+        global ROISlot
+        ROISlot = Detection.inisialisasi(self,path,rowValue)
+        self.f4Label1['text'] = 'INISIALISASI SELESAI'
+    def saveKoordinat(self):
+        curdir = os.getcwd()+"\data" 
+        arr = np.array(ROISlot) 
+        np.save("tes.npy",arr)
+        print('DONEEEE')
     def __init__(self, parent, controller):
+        global namaFile
         tk.Frame.__init__(self, parent)
-        #f4Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        #font=("Helvetica 10 bold"),command = lambda : controller.show_frame(Frame3))
+        f4Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
+                        font=("Helvetica 10 bold"),command = lambda : controller.show_frame(Frame3))
+        f4Btn2 = tk.Button(self, text='Mulai', padx=10, pady=10, fg='black', height=1, width=15,
+                        font=("Helvetica 10 bold"), command = self.getROISlot)
+        f4Btn3 = tk.Button(self, text='Selesai', padx=10, pady=10, fg='black', height=1, width=15,
+                        font=("Helvetica 10 bold"), command=self.saveKoordinat)
+        
+        self.f4Label1 = tk.Label(self, text='Silahkan untuk mulai inisialisasi', padx=10,
+                         pady=10, font=('Helvetica 12 bold')) 
+        f4Label2 = tk.Label(self, text="Nama area observasi = ", padx=10,
+                         pady=10, font=('Helvetica 12 bold'))  
+        f4Entry1 = tk.Entry(self, bd=5)                                               
+        f4Btn1.grid(row=0,column=0, padx=8, pady=8, ipady=1, ipadx=15)
+        self.f4Label1.grid(row=1,column=2,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
+        f4Label2.grid(row=4,column=1,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
+        f4Btn2.grid(row=3, column=3, padx=8, pady=8, ipady=1, ipadx=15)
+        f4Btn3.grid(row=5, column=3, padx=8, pady=8, ipady=1, ipadx=15)
+        f4Entry1.grid(row=4,column=5,columnspan=2, padx=8, pady=8, ipady=1, ipadx=15)
 
-        f4Btn2 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame5))
-
-        f4Btn2.grid(row=4, column=1, padx=8, pady=8, ipady=1, ipadx=15)
-
+        namaFile = str(f4Entry1.get())
 class Frame5(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)

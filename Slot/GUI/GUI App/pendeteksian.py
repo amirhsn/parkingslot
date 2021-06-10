@@ -355,9 +355,9 @@ class Detection:
 
 
 
-    def inisialisasi(self):
+    def inisialisasi(self,pathImage, rowValues):
         global point, click, keyPoint, tAwal, tAkhir, indexClick, rowIndicator, cache, image, tAwalTemp, tAkhirTemp
-        image = cv2.imread("data/CNR/samples/cam8.jpg")
+        image = cv2.imread(pathImage)
         image = cv2.resize(image, (image.shape[1], image.shape[0]), interpolation=cv2.INTER_AREA)
         state = 0
         sum_rows = 0
@@ -367,7 +367,7 @@ class Detection:
         imges = image.copy()
         original_clone = image.copy()
         clone = Image.fromarray(original_clone)
-        jumlahSlot = [2, 3, 4]
+        jumlahSlot = rowValues
 
         def coordinate(event, x, y, flags, param):
             global point, click, keyPoint, tAwal, tAkhir, indexClick, rowIndicator, cache, image, tAwalTemp, tAkhirTemp
@@ -448,3 +448,5 @@ class Detection:
                 ROI_slot[row][i].append([keyPoint[1 + i + i][0], keyPoint[1 + i + i][1]])
                 ROI_slot[row][i].append([keyPoint[2 + i + i][0], keyPoint[2 + i + i][1]])
                 ROI_slot[row][i].append([keyPoint[3 + i + i][0], keyPoint[3 + i + i][1]])
+        
+        return ROI_slot
