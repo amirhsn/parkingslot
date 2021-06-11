@@ -1,20 +1,14 @@
 import cv2
-import tkinter as tk
 import numpy as np
 import math
-import os
-from os import listdir
-from os.path import isfile, join
 from tkinter import *
-from tkinter import filedialog
-from tkinter import ttk
 from PIL import Image
-from PIL import ImageTk
 from shapely.geometry import Polygon
-from PIL.ImageTk import PhotoImage
 
 
 class Detection:
+    global slot2Value, slot3Value
+
     def __init__(self):
         return None
     
@@ -24,10 +18,10 @@ class Detection:
         indexes = 0
 
         # Load Yolo
-        net = cv2.dnn.readNet("yolov4-obj_best.weights", "yolov4-obj.cfg")
+        net = cv2.dnn.readNet("../../Status/yolov4-obj_best.weights", "../../Status/yolov4-obj.cfg")
         # net = cv2.dnn.readNet("20_yolov3.weights","20_yolov3.cfg")
 
-        with open("obj.names", "r") as f:
+        with open("../../Status/obj.names", "r") as f:
             classes = [line.strip() for line in f.readlines()]
         layer_names = net.getLayerNames()
         output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -92,12 +86,12 @@ class Detection:
     distancez = []
 
 
-    def euclideanDistance(self,coordinate1, coordinate2):
-        return pow(pow(coordinate1[0] - coordinate2[0], 2) + pow(coordinate1[1] - coordinate2[1], 2), .5)
+    def determine_occupancy(self,indexes, box, path, coordinatePath):
 
+        def euclideanDistance(coordinate1, coordinate2):
+            return pow(pow(coordinate1[0] - coordinate2[0], 2) + pow(coordinate1[1] - coordinate2[1], 2), .5)
 
-    def determine_occupancy(self,indexes, box):
-        global slot2Value, slot3Value
+        image = cv2.imread(path)
         slot2Value = 0
         slot3Value = 0
         boxess = []
@@ -130,7 +124,7 @@ class Detection:
         car_idx = []
 
         # Load koodinat npy
-        ROI_slot = np.load('coordinate/camera8.npy', allow_pickle=True)
+        ROI_slot = np.load(coordinatePath, allow_pickle=True)
         for i in range(len(indexes)):
             boxess.append([])
             boxess[i].append(box[i][0])
@@ -344,13 +338,13 @@ class Detection:
                     centSlotX = int(centroid_slot_x[row][slots])
                     centSlotY = int(centroid_slot_y[row][slots])
                     for i in allCentroidCar:
-                        distancez.append(self.euclideanDistance((centSlotX, centSlotY), (i[0], i[1])))
+                        distancez.append(euclideanDistance((centSlotX, centSlotY), (i[0], i[1])))
                     minDistancezIndex = distancez.index(min(distancez))
                     centCarX = allCentroidCar[minDistancezIndex][0]
                     centCarY = allCentroidCar[minDistancezIndex][1]
                     mod = cv2.line(plottedImage, (centSlotX, centSlotY), (centCarX, centCarY), (0, 255, 255), 2)
 
-        return plottedImage
+        return plottedImage, slot2Value, slot3Value
 
 
 

@@ -1,15 +1,12 @@
-from tkinter import font
-import cv2
 import tkinter as tk
-import numpy as np
-import math
-from tkinter import *
-from tkinter import filedialog
-from PIL import ImageTk, Image
-from shapely.geometry import Polygon
-from PIL.ImageTk import PhotoImage
 import os
-from pendeteksian import Detection
+from os import listdir
+from os.path import isfile, join
+from tkinter import filedialog
+from tkinter import ttk
+from PIL import ImageTk
+from PIL.ImageTk import PhotoImage
+from pendeteksian import *
 #======================================================================
 
 coordinateDict = {'Dummy','Masih dummy','Dummy lagi'}
@@ -19,8 +16,9 @@ rowEntry = {}
 panelA = None
 panelB = None
 rowValue = []
-path = ''
+path = 'C:/Users/ujang/Desktop/sampel gambar/SUNNY/camera8.jpg'
 ROISlot = []
+namaFile2 = ''
 
 def select_image():
     global path
@@ -32,9 +30,9 @@ def select_image():
     print(path) 
 
 class tkinterApp(tk.Tk):
-
     # __init__ function for class tkinterApp
     def __init__(self, *args, **kwargs):
+        global container,frame,frames
         # __init__ function for class Tk
         tk.Tk.__init__(self, *args, **kwargs)
 
@@ -50,7 +48,7 @@ class tkinterApp(tk.Tk):
 
         # iterating through a tuple consisting
         # of the different page layouts
-        for F in (Frame1, Frame2, Frame3, Frame4, Frame5, Frame6, Frame7):
+        for F in (Frame1, Frame2, Frame3, Frame4, Frame5, Frame6):
             frame = F(container, self)
 
             # initializing frame of that object from
@@ -62,6 +60,14 @@ class tkinterApp(tk.Tk):
 
         self.show_frame(Frame1)
 
+    def lanjut_frame(self,cont):
+        frame = Frame7(container,self)
+        self.frames[Frame7] = frame
+        frame.grid(row=0, column=0, sticky="nsew")
+        self.show_frame(Frame7)
+
+
+    #print(frames)
     # to display the current frame passed as
     # parameter
     def show_frame(self, cont):
@@ -170,44 +176,45 @@ class Frame3(tk.Frame):
         canvas.grid(row=1,column=2)
         gifFile = PhotoImage(file="C:\\Users\\LENOVO\\ParkingSlot\\Slot\\GUI\\GUI App\\gifz.gif")
         canvas.create_image(0,0, anchor = NW, image=gifFile)
+
 class Frame4(tk.Frame):
     def getROISlot(self):
         global ROISlot
         ROISlot = Detection.inisialisasi(self,path,rowValue)
         self.f4Label1['text'] = 'INISIALISASI SELESAI'
     def saveKoordinat(self):
-        curdir = os.getcwd()+"\data" 
+        global namaFile2
         arr = np.array(ROISlot) 
-        np.save("tes.npy",arr)
-        print('DONEEEE')
+        namaFile = self.f4Entry1.get()
+        namaFile2 = namaFile
+        np.save("data/"+str(namaFile)+".npy",arr)
+        print('END')
     def __init__(self, parent, controller):
-        global namaFile
         tk.Frame.__init__(self, parent)
         f4Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
                         font=("Helvetica 10 bold"),command = lambda : controller.show_frame(Frame3))
         f4Btn2 = tk.Button(self, text='Mulai', padx=10, pady=10, fg='black', height=1, width=15,
                         font=("Helvetica 10 bold"), command = self.getROISlot)
         f4Btn3 = tk.Button(self, text='Selesai', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command=self.saveKoordinat)
+                        font=("Helvetica 10 bold"), command=lambda : [self.saveKoordinat(), controller.show_frame(Frame5)])
         
         self.f4Label1 = tk.Label(self, text='Silahkan untuk mulai inisialisasi', padx=10,
                          pady=10, font=('Helvetica 12 bold')) 
         f4Label2 = tk.Label(self, text="Nama area observasi = ", padx=10,
                          pady=10, font=('Helvetica 12 bold'))  
-        f4Entry1 = tk.Entry(self, bd=5)                                               
+        self.f4Entry1 = tk.Entry(self, bd=5)                                               
         f4Btn1.grid(row=0,column=0, padx=8, pady=8, ipady=1, ipadx=15)
         self.f4Label1.grid(row=1,column=2,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
         f4Label2.grid(row=4,column=1,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
         f4Btn2.grid(row=3, column=3, padx=8, pady=8, ipady=1, ipadx=15)
         f4Btn3.grid(row=5, column=3, padx=8, pady=8, ipady=1, ipadx=15)
-        f4Entry1.grid(row=4,column=5,columnspan=2, padx=8, pady=8, ipady=1, ipadx=15)
-
-        namaFile = str(f4Entry1.get())
+        self.f4Entry1.grid(row=4,column=5,columnspan=2, padx=8, pady=8, ipady=1, ipadx=15)
 class Frame5(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.obsname = namaFile2
 
-        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan nama #namaareaobservasi\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 14 bold'))
+        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan nama "+self.obsname+"\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 14 bold'))
         f5Label2 = tk.Label(self, text="Apakah anda ingin melakukan inisialisasi area parkir lainnya?",padx=10,pady=10,font=('Helvetica 14 bold'))
         f5Btn1 = tk.Button(self, text='Ya', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame2))
         f5Btn2 = tk.Button(self, text='Tidak', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame6))
@@ -237,18 +244,22 @@ class Frame6(tk.Frame):
         value_inside = tk.StringVar(self)
         value_inside.set("Select an Option")
 
-        #f6DropDown = tk.OptionMenu(self, value_inside, *coordinateDict)
+        f6DropDown = tk.OptionMenu(self, value_inside, *coordinateDict)
         #f6DropDown.pack()
 
         #anim = MyLabel(tk.Frame, 'gifz.gif')
         #anim.pack()
 
         def get_coordinate():
-            global coordinate
+            global coordinatePath
+
             coordinate = value_inside.get()
+            coordinatePath = curdir + "\\" + coordinate
+            print(coordinatePath)
+
             return None
 
-        submit_button = tk.Button(self, text='Submit', command=lambda :[get_coordinate(), controller.show_frame(Frame7)])
+        submit_button = tk.Button(self, text='Submit', command=lambda :[get_coordinate(), controller.lanjut_frame(Frame7)])
 
 
         f6Btn2 = tk.Button(self, text='Upload gambar', padx=10, pady=10, fg='black', height=1, width=15,
@@ -260,7 +271,7 @@ class Frame6(tk.Frame):
 
         f6Btn1.grid(row=0, column=0, padx=10, pady=10)
         f6Label1.grid(row=1, column=0, columnspan=4, padx=10, pady=15)
-        #f6DropDown.grid(row=2, column=0, rowspan=2, padx=10, pady=15)
+        f6DropDown.grid(row=2, column=0, rowspan=2, padx=10, pady=15)
         f6Btn2.grid(row=5, column=1, pady=20, padx=10)
         f6Btn3.grid(row=5, column=2, pady=20, padx=25)
         submit_button.grid(row=5, column=3, pady=20, padx=25)
@@ -272,108 +283,108 @@ class Frame7(tk.Frame):
 
         global inputText, outputText
         global slot1Text, slot2Text, slot3Text, slot1Result, slot2Result, slot3Result
-        global panelA, panelB, edged, image
+        global panelA, panelB, plottedImage, image
 
-        try:
-            image = cv2.imread("C:/Users/ujang/Desktop/sampel gambar/SUNNY/camera8.jpg")
+        btn = tk.Button(self, text="Home", command= lambda : [controller.show_frame(Frame1)])
+        btn.grid(row=3, column=7, padx='10', pady='10')
 
-            index, box = Detection.car_detection(self,image)
-            outImg = Detection.determine_occupancy(self,indexes=index, box=box)
+        btn2 = Button(self, text="Pilih gambar input", command=lambda : [select_image(), self.load()])
+        btn2.grid(row=3, column=8, padx='10', pady='10')
 
-            scale_percent = 65  # percent of original size
-            width = int(image.shape[1] * scale_percent / 100)
-            height = int(image.shape[0] * scale_percent / 100)
-            dim = (width, height)
+        self.load()
 
-            # resize image
-            resized_image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
-            resized_plot = cv2.resize(outImg, dim, interpolation=cv2.INTER_AREA)
+    def load(self):
+        image = cv2.imread(path)
 
-            resized_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
-            resized_plot = cv2.cvtColor(resized_plot, cv2.COLOR_BGR2RGB)
+        index, box = Detection.car_detection(self,image)
+        outImg, slot2Value, slot3Value = Detection.determine_occupancy(self,indexes=index, box=box, path=path, coordinatePath=coordinatePath)
 
-            # convert the images to PIL format...
-            image = Image.fromarray(resized_image)
-            plottedImage = Image.fromarray(resized_plot)
-            # ...and then to ImageTk format
-            image = ImageTk.PhotoImage(image)
-            plottedImage = ImageTk.PhotoImage(plottedImage)
+        scale_percent = 65  # percent of original size
+        width = int(image.shape[1] * scale_percent / 100)
+        height = int(image.shape[0] * scale_percent / 100)
+        dim = (width, height)
 
-            # if the panels are None, initialize them
-            if panelA is None or panelB is None:
-                # text 'Gambar input'
-                inputText = tk.Label(self,text='Input', font=('Arial', 20), pady=5)
-                inputText.grid(row=0, column=0)
-                # text 'Gambar output'
-                outputText = tk.Label(self,text='            Output', font=('Arial', 20), pady=5)
-                outputText.grid(row=0, column=6)
+        # resize image
+        resized_image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
+        resized_plot = cv2.resize(outImg, dim, interpolation=cv2.INTER_AREA)
 
-                # the first panel will store our original image
-                panelA = tk.Label(self,image=image)
-                panelA.image = image
-                # panelA.pack(side="left", padx=10, pady=10)
-                panelA.grid(row=1, column=0, columnspan=6, padx='10', pady='10')
+        resized_image = cv2.cvtColor(resized_image, cv2.COLOR_BGR2RGB)
+        resized_plot = cv2.cvtColor(resized_plot, cv2.COLOR_BGR2RGB)
 
-                # while the second panel will store the edge map
-                panelB = tk.Label(self,image=plottedImage)
-                panelB.image = plottedImage
-                # panelB.pack(side="right", padx=10, pady=10)
-                panelB.grid(row=1, column=6, columnspan=6, padx='10', pady='10')
+        # convert the images to PIL format...
+        image = Image.fromarray(resized_image)
+        plottedImage = Image.fromarray(resized_plot)
+        # ...and then to ImageTk format
+        image = ImageTk.PhotoImage(image)
+        plottedImage = ImageTk.PhotoImage(plottedImage)
 
-                # text untuk keterangan slot (total, occupied, dan vacant)
-                # Total slot
-                slot1Text = tk.Label(self,text='Total lahan parkir      ', font=('Arial', 14), pady=5)
-                slot1Text.grid(row=2, column=1)
-                # Occupied slot
-                slot2Text = tk.Label(self,text='Lahan parkir terisi    ', font=('Arial', 14), pady=5)
-                slot2Text.grid(row=3, column=1)
-                # Vacant slot
-                slot3Text = tk.Label(self,text='Lahan parkir kosong', font=('Arial', 14), pady=5)
-                slot3Text.grid(row=4, column=1)
+        # if the panels are None, initialize them
+        #if panelA is None or panelB is None:
+        # text 'Gambar input'
+        inputText = tk.Label(self,text='Input', font=('Arial', 20), pady=5)
+        inputText.grid(row=0, column=0)
+        # text 'Gambar output'
+        outputText = tk.Label(self,text='            Output', font=('Arial', 20), pady=5)
+        outputText.grid(row=0, column=6)
 
-                # text untuk hasil slot (total, occupied, dan vacant)
-                # Total slot
-                slot1Result = tk.Label(self,text='= ' + str("slot2Value" + "slot3Value"), font=('Arial', 14), pady=10, fg='red')
-                slot1Result.grid(row=2, column=3)
-                # Occupied slot
-                slot2Result = tk.Label(self,text='= ' + str("slot2Value"), font=('Arial', 14), pady=10, fg='red')
-                slot2Result.grid(row=3, column=3)
-                # Vacant slot
-                slot3Result = tk.Label(self,text='= ' + str("slot3Value"), font=('Arial', 14), pady=10, fg='red')
-                slot3Result.grid(row=4, column=3)
+        # the first panel will store our original image
+        panelA = tk.Label(self,image=image)
+        panelA.image = image
+        # panelA.pack(side="left", padx=10, pady=10)
+        panelA.grid(row=1, column=0, columnspan=6, padx='10', pady='10')
 
+        # while the second panel will store the edge map
+        panelB = tk.Label(self,image=plottedImage)
+        panelB.image = plottedImage
+        # panelB.pack(side="right", padx=10, pady=10)
+        panelB.grid(row=1, column=6, columnspan=6, padx='10', pady='10')
 
-            # otherwise, update the image panels
-            else:
-                # update the pannels
-                panelA.configure(image=image)
-                panelB.configure(image=plottedImage)
-                panelA.image = image
-                panelB.image = plottedImage
+        # text untuk keterangan slot (total, occupied, dan vacant)
+        # Total slot
+        slot1Text = tk.Label(self,text='Total lahan parkir      ', font=('Arial', 14), pady=5)
+        slot1Text.grid(row=2, column=1)
+        # Occupied slot
+        slot2Text = tk.Label(self,text='Lahan parkir terisi    ', font=('Arial', 14), pady=5)
+        slot2Text.grid(row=3, column=1)
+        # Vacant slot
+        slot3Text = tk.Label(self,text='Lahan parkir kosong', font=('Arial', 14), pady=5)
+        slot3Text.grid(row=4, column=1)
 
-                # text untuk hasil slot (total, occupied, dan vacant)
-                # Total slot
-                slot1Result = tk.Label(self,text='= ' + str("slot2Value" + "slot3Value"), font=('Arial', 14), pady=10, fg='red')
-                slot1Result.grid(row=2, column=3)
-                # Occupied slot
-                slot2Result = tk.Label(self,text='= ' + str("slot2Value"), font=('Arial', 14), pady=10, fg='red')
-                slot2Result.grid(row=3, column=3)
-                # Vacant slot
-                slot3Result = tk.Label(self,text='= ' + str("slot3Value"), font=('Arial', 14), pady=10, fg='red')
-                slot3Result.grid(row=4, column=3)
+        # text untuk hasil slot (total, occupied, dan vacant)
+        # Total slot
+        slot1Result = tk.Label(self,text='= ' + str(slot2Value + slot3Value), font=('Arial', 14), pady=10, fg='red')
+        slot1Result.grid(row=2, column=3)
+        # Occupied slot
+        slot2Result = tk.Label(self,text='= ' + str(slot2Value), font=('Arial', 14), pady=10, fg='red')
+        slot2Result.grid(row=3, column=3)
+        # Vacant slot
+        slot3Result = tk.Label(self,text='= ' + str(slot3Value), font=('Arial', 14), pady=10, fg='red')
+        slot3Result.grid(row=4, column=3)
 
 
-                btn = tk.Button(self, text="Pilih gambar input", command=select_image)
-                btn.grid(row=3, column=7, padx='10', pady='10')
-                btn.pack(side="bottom", fill="both", expand="yes", padx="10", pady="10")
+        # otherwise, update the image panels
+        #else:
+        # update the pannels
+        panelA.configure(image=image)
+        panelB.configure(image=plottedImage)
+        panelA.image = image
+        panelB.image = plottedImage
 
-        except:
-            print("error")
+        # text untuk hasil slot (total, occupied, dan vacant)
+        # Total slot
+        slot1Result = tk.Label(self,text='= ' + str(slot2Value + slot3Value), font=('Arial', 14), pady=10, fg='red')
+        slot1Result.grid(row=2, column=3)
+        # Occupied slot
+        slot2Result = tk.Label(self,text='= ' + str(slot2Value), font=('Arial', 14), pady=10, fg='red')
+        slot2Result.grid(row=3, column=3)
+        # Vacant slot
+        slot3Result = tk.Label(self,text='= ' + str(slot3Value), font=('Arial', 14), pady=10, fg='red')
+        slot3Result.grid(row=4, column=3)
+
+
 # kick off the GUI
 
-global anim
-
-
+global animnyut
 
 app = tkinterApp()
 app.mainloop()
