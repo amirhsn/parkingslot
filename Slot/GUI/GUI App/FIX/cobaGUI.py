@@ -153,9 +153,9 @@ class Frame3(tk.Frame):
 
         f3Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
                         font=("Helvetica 10 bold"),command = lambda : controller.refresh_frame(Frame2))
-        f3Label1 = tk.Label(self, text="Silahkan melakukan inisialisasi\nslot seperti contoh berikut", padx=10, pady=10,
+        f3Label1 = tk.Label(self, text="Silahkan melakukan inisialisasi slot \ndengan klik kiri pada ujung slot \nseperti contoh berikut", padx=10, pady=10,
                          font=('Helvetica 12 bold'))
-        f3Label2 = tk.Label(self, text="Apabila terdapat salah klik, klik \nkanan mouse untuk kembali ke awal baris", padx=10,
+        f3Label2 = tk.Label(self, text="Apabila terdapat salah klik, klik \nkanan mouse untuk kembali \nTekan c untuk ke baris selanjutnya", padx=10,
                          pady=10, font=('Helvetica 12 bold'))
 
 
@@ -181,7 +181,7 @@ class Frame3(tk.Frame):
         anim = MyLabel(self, 'gifz.gif')
         #anim.pack()
 
-        anim.grid(row=1, column=2, padx=10, pady=10, columnspan=2)
+        anim.grid(row=1, column=2, padx=10, pady=10, columnspan=1)
 
         
 
@@ -305,18 +305,24 @@ class Frame7(tk.Frame):
         btn2 = Button(self, text="Pilih gambar input", command=lambda : [select_image(), self.load()])
         btn2.grid(row=3, column=8, padx='10', pady='10')
 
+
+
         self.load()
 
+
+
     def load(self):
+
         image = cv2.imread(path)
 
         index, box = Detection.car_detection(self,image)
         outImg, slot2Value, slot3Value = Detection.determine_occupancy(self,indexes=index, box=box, path=path, coordinatePath=coordinatePath)
 
-        scale_percent = 65  # percent of original size
-        width = int(image.shape[1] * scale_percent / 100)
-        height = int(image.shape[0] * scale_percent / 100)
-        dim = (width, height)
+        screen_width = self.winfo_screenwidth()
+        img_width = int((48/100) * screen_width)
+        h, w = image.shape[:2]
+        r = img_width / float(w)
+        dim = (img_width, int(h * r))
 
         # resize image
         resized_image = cv2.resize(image, dim, interpolation=cv2.INTER_AREA)
@@ -396,13 +402,6 @@ class Frame7(tk.Frame):
         slot3Result.grid(row=4, column=3)
 
 
-# kick off the GUI
-
-global animnyut
-
-#app = tkinterApp()
-#app.mainloop()
-
-#if __name__ == "__main__":
-#    app = tkinterApp()
-#    app.mainloop()
+# run the GUI
+app = tkinterApp()
+app.mainloop()
