@@ -7,18 +7,20 @@ from tkinter import ttk
 from PIL import ImageTk
 from PIL.ImageTk import PhotoImage
 from pendeteksian import *
+from gifPlay import MyLabel
 #======================================================================
 
 coordinateDict = {'Dummy','Masih dummy','Dummy lagi'}
-row = 0
+
 rowLabel = {}
 rowEntry = {}
+row = 0
+rowValue = 0
 panelA = None
 panelB = None
-rowValue = []
-path = 'C:/Users/ujang/Desktop/sampel gambar/SUNNY/camera8.jpg'
+path = ''
 ROISlot = []
-namaFile2 = ''
+anim = None
 
 def select_image():
     global path
@@ -48,23 +50,22 @@ class tkinterApp(tk.Tk):
 
         # iterating through a tuple consisting
         # of the different page layouts
-        for F in (Frame1, Frame2, Frame3, Frame4, Frame5, Frame6):
-            frame = F(container, self)
+        frame = Frame1(container, self)
 
-            # initializing frame of that object from
-            # startpage, page1, page2 respectively with
-            # for loop
-            self.frames[F] = frame
+        # initializing frame of that object from
+        # startpage, page1, page2 respectively with
+        # for loop
+        self.frames[Frame1] = frame
 
-            frame.grid(row=0, column=0, sticky="nsew")
+        frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame(Frame1)
 
-    def lanjut_frame(self,cont):
-        frame = Frame7(container,self)
-        self.frames[Frame7] = frame
+    def refresh_frame(self,cont):
+        frame = cont(container,self)
+        self.frames[cont] = frame
         frame.grid(row=0, column=0, sticky="nsew")
-        self.show_frame(Frame7)
+        self.show_frame(cont)
 
 
     #print(frames)
@@ -83,15 +84,16 @@ class Frame1(tk.Frame):
         f1Label1 = tk.Label(self, text='Silahkan pilih menu yang diinginkan', padx=10, pady=10, fg='black', height=3,
                          font=("Helvetica 14 bold"))
         f1Btn1 = tk.Button(self, text='Inisialisasi Slot', width=20, height=2, font=("Helvetica 10 bold"),
-                        command = lambda : controller.show_frame(Frame2))
-        f1Btn2 = tk.Button(self, text='Deteksi Slot', width=20, height=2, font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame6))
+                        command = lambda : controller.refresh_frame(Frame2))
+        f1Btn2 = tk.Button(self, text='Deteksi Slot', width=20, height=2, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame6))
 
         f1LabelJudul.grid(row=0, column=1, columnspan=2)
         f1Label1.grid(row=1, column=1, columnspan=2)
         f1Btn1.grid(row=2, column=1, pady=10)
         f1Btn2.grid(row=2, column=2, pady=10)
 
-class Frame2(tk.Frame): 
+class Frame2(tk.Frame):
+
     def addRow(self):
         global row,rowLabel,rowEntry
         if row == 10:
@@ -121,9 +123,13 @@ class Frame2(tk.Frame):
 
 
     def __init__(self, parent, controller):
+        global row, rowLabel, rowEntry
+        row = 0
+        rowLabel = {}
+        rowEntry = {}
         tk.Frame.__init__(self, parent)
         f2Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"))
+                        font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame1))
         f2Label1 = tk.Label(self, text="Masukkan jumlah slot parkir pada setiap barisnya", padx=10, pady=10,
                          font=('Helvetica 12 bold'))
 
@@ -133,7 +139,7 @@ class Frame2(tk.Frame):
                         font=("Helvetica 10 bold"), command=self.addRow)
 
         f2Btn4 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = lambda : [self.storeValue(), controller.show_frame(Frame3)])
+                        font=("Helvetica 10 bold"), command = lambda : [self.storeValue(), controller.refresh_frame(Frame3)])
 
         f2Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
         f2Label1.grid(row=1, column=0, columnspan=4, padx=6, pady=6)
@@ -142,12 +148,11 @@ class Frame2(tk.Frame):
         f2Btn4.grid(row=13, column=1, padx=8, pady=8, ipady=1, ipadx=15)
 
 class Frame3(tk.Frame):
-
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 
         f3Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"),command = lambda : controller.show_frame(Frame2))
+                        font=("Helvetica 10 bold"),command = lambda : controller.refresh_frame(Frame2))
         f3Label1 = tk.Label(self, text="Silahkan melakukan inisialisasi\nslot seperti contoh berikut", padx=10, pady=10,
                          font=('Helvetica 12 bold'))
         f3Label2 = tk.Label(self, text="Apabila terdapat salah klik, klik \nkanan mouse untuk kembali ke awal baris", padx=10,
@@ -158,7 +163,9 @@ class Frame3(tk.Frame):
                         font=("Helvetica 10 bold"), command=select_image)
 
         f3Btn3 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command=lambda : controller.show_frame(Frame4))                
+                        font=("Helvetica 10 bold"), command=lambda : controller.refresh_frame(Frame4))
+
+                    
 
         f3Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
 
@@ -166,16 +173,17 @@ class Frame3(tk.Frame):
 
         f3Label1.grid(row=1, column=0, columnspan=2, padx=6, pady=6)
         f3Label2.grid(row=3, column=0, columnspan=2, padx=6, pady=6)
-        #anim.grid(row=1, column=2, padx=10, pady=10)
 
 
         f3Btn2.grid(row=3, column=2, padx=10, pady=10, ipady=1, ipadx=5)
         f3Btn3.grid(row=3, column=3, padx=10, pady=10, ipady=1, ipadx=5)
 
-        canvas = Canvas(self, width = 200, height = 200)
-        canvas.grid(row=1,column=2)
-        gifFile = PhotoImage(file="C:\\Users\\LENOVO\\ParkingSlot\\Slot\\GUI\\GUI App\\gifz.gif")
-        canvas.create_image(0,0, anchor = NW, image=gifFile)
+        anim = MyLabel(self, 'gifz.gif')
+        #anim.pack()
+
+        anim.grid(row=1, column=2, padx=10, pady=10, columnspan=2)
+
+        
 
 class Frame4(tk.Frame):
     def getROISlot(self):
@@ -183,20 +191,26 @@ class Frame4(tk.Frame):
         ROISlot = Detection.inisialisasi(self,path,rowValue)
         self.f4Label1['text'] = 'INISIALISASI SELESAI'
     def saveKoordinat(self):
-        global namaFile2
-        arr = np.array(ROISlot) 
+        global namaFile
+        arr = np.array(ROISlot, dtype=object)
         namaFile = self.f4Entry1.get()
-        namaFile2 = namaFile
-        np.save("data/"+str(namaFile)+".npy",arr)
+        save("data/"+str(namaFile)+".npy", arr)
+        #np.save("data/"+str(namaFile)+".npy",arr)
         print('END')
+
+    def clear(self):
+        rowLabel = {}
+        rowEntry = {}
+        row = 0
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         f4Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"),command = lambda : controller.show_frame(Frame3))
+                        font=("Helvetica 10 bold"),command = lambda : controller.refresh_frame(Frame3))
         f4Btn2 = tk.Button(self, text='Mulai', padx=10, pady=10, fg='black', height=1, width=15,
                         font=("Helvetica 10 bold"), command = self.getROISlot)
         f4Btn3 = tk.Button(self, text='Selesai', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command=lambda : [self.saveKoordinat(), controller.show_frame(Frame5)])
+                        font=("Helvetica 10 bold"), command= lambda : [self.saveKoordinat(), self.clear(), controller.refresh_frame(Frame5)])
         
         self.f4Label1 = tk.Label(self, text='Silahkan untuk mulai inisialisasi', padx=10,
                          pady=10, font=('Helvetica 12 bold')) 
@@ -209,15 +223,15 @@ class Frame4(tk.Frame):
         f4Btn2.grid(row=3, column=3, padx=8, pady=8, ipady=1, ipadx=15)
         f4Btn3.grid(row=5, column=3, padx=8, pady=8, ipady=1, ipadx=15)
         self.f4Entry1.grid(row=4,column=5,columnspan=2, padx=8, pady=8, ipady=1, ipadx=15)
+
 class Frame5(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        self.obsname = namaFile2
 
-        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan nama "+self.obsname+"\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 14 bold'))
+        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan nama " + namaFile +"\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 14 bold'))
         f5Label2 = tk.Label(self, text="Apakah anda ingin melakukan inisialisasi area parkir lainnya?",padx=10,pady=10,font=('Helvetica 14 bold'))
-        f5Btn1 = tk.Button(self, text='Ya', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame2))
-        f5Btn2 = tk.Button(self, text='Tidak', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame6))
+        f5Btn1 = tk.Button(self, text='Ya', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame2))
+        f5Btn2 = tk.Button(self, text='Tidak', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame6))
 
         f5Label1.grid(row=0,column=0,columnspan=4,padx=15,pady=15)
         f5Label2.grid(row=1,column=0,columnspan=4,padx=15,pady=15)
@@ -232,19 +246,23 @@ class Frame6(tk.Frame):
         print(curdir)
         print(os.listdir(curdir))
         coordinateDict = os.listdir(curdir)
+        NewCoordineteDict = [i[:-4] for i in coordinateDict]
+
+        print(NewCoordineteDict)
+
         #os.chdir(curdir+)
 
         tk.Frame.__init__(self, parent)
 
         f6Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                            font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame1))
+                            font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame1))
         f6Label1 = tk.Label(self, text="Silahkan pilih area observasi", padx=10, pady=10,
                              font=('Helvetica 14 bold'))
 
         value_inside = tk.StringVar(self)
         value_inside.set("Select an Option")
 
-        f6DropDown = tk.OptionMenu(self, value_inside, *coordinateDict)
+        f6DropDown = tk.OptionMenu(self, value_inside, *NewCoordineteDict)
         #f6DropDown.pack()
 
         #anim = MyLabel(tk.Frame, 'gifz.gif')
@@ -254,27 +272,23 @@ class Frame6(tk.Frame):
             global coordinatePath
 
             coordinate = value_inside.get()
-            coordinatePath = curdir + "\\" + coordinate
-            print(coordinatePath)
+            coordinatePath = curdir + "\\" + coordinate + ".npy"
+            print("Cek:"+coordinatePath)
 
             return None
-
-        submit_button = tk.Button(self, text='Submit', command=lambda :[get_coordinate(), controller.lanjut_frame(Frame7)])
-
 
         f6Btn2 = tk.Button(self, text='Upload gambar', padx=10, pady=10, fg='black', height=1, width=15,
                             font=("Helvetica 10 bold"),command = select_image)
 
 
         f6Btn3 = tk.Button(self, text='Berikutnya', padx=25, pady=10, fg='black', height=1, width=15,
-                            font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame1))
+                            font=("Helvetica 10 bold"), command = lambda : [get_coordinate(), controller.refresh_frame(Frame7)])
 
         f6Btn1.grid(row=0, column=0, padx=10, pady=10)
         f6Label1.grid(row=1, column=0, columnspan=4, padx=10, pady=15)
         f6DropDown.grid(row=2, column=0, rowspan=2, padx=10, pady=15)
         f6Btn2.grid(row=5, column=1, pady=20, padx=10)
         f6Btn3.grid(row=5, column=2, pady=20, padx=25)
-        submit_button.grid(row=5, column=3, pady=20, padx=25)
 
 
 class Frame7(tk.Frame):

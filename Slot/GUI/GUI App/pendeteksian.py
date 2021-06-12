@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import math
+from numpy import save
 from tkinter import *
 from PIL import Image
 from shapely.geometry import Polygon
@@ -251,10 +252,17 @@ class Detection:
                 idx_car_list.append(idx_car)
                 min_ed_car.append([idx_car, row, slots, min_ed])
 
+
                 roi1 = np.array(ROI_slot[row][slots])
                 roi2 = np.array(ROI_car[idx_car])
-                cv2.fillPoly(slotImage[row][slots], pts=[roi1], color=(0, 0, 255))
-                cv2.fillPoly(carImage[row][slots], pts=[roi2], color=(0, 0, 255))
+
+
+                cv2.fillPoly(slotImage[row][slots], pts=np.int32([roi1]), color=(0, 0, 255))
+
+                cv2.fillPoly(carImage[row][slots], pts=np.int32([roi2]), color=(0, 0, 255))
+
+
+
                 iou[row][slots] = cv2.bitwise_and(slotImage[row][slots], carImage[row][slots])
                 iouu = np.array(iou[row][slots])
                 # print(iouu)
@@ -312,7 +320,9 @@ class Detection:
 
         fontScale = 0.8
 
+
         for row in range(len(ROI_slot)):
+            hitung = 0
             for slots in range(len(ROI_slot[row])):
                 # draw ROI_slot
                 mod = cv2.polylines(plottedImage, np.int32([ROI_slot[row][slots]]), True, (255, 0, 0), thickness=2)
@@ -320,14 +330,19 @@ class Detection:
                 mod = cv2.putText(plottedImage, Status[row][slots],
                                 (int(centroid_slot_x[row][slots]) - 10, int(centroid_slot_y[row][slots])),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.3, (255, 255, 0), 1, cv2.LINE_AA)
-                # Text slot
-                # PENTING extY GANTI KE '0' UNTUK CAMERA 8 DAN '15' UNTUK CAMERA 1. BIAR TIDAK TUMPANG TINDIH
-                extY = 0
-                minROISlot = min(ROI_slot[row][slots])
-                org = (minROISlot[0], minROISlot[1] + extY)
+
+
+
+                if hitung %2 == 0:
+                    org = (ROI_slot[row][slots][0][0], ROI_slot[row][slots][0][1])
+                else:
+                    org = (ROI_slot[row][slots][1][0], ROI_slot[row][slots][1][1])
+
                 slotId = "(" + str(row) + "-" + str(slots) + ")"
                 font = cv2.FONT_HERSHEY_PLAIN
                 cv2.putText(plottedImage, slotId, org, font, fontScale, (255, 255, 255), 1)
+
+                hitung = hitung + 1
 
         for row in range(len(ROI_slot)):
             for slots in range(len(ROI_slot[row])):
@@ -363,14 +378,11 @@ class Detection:
         clone = Image.fromarray(original_clone)
         jumlahSlot = rowValues
 
+        # PAKE INI
         def coordinate(event, x, y, flags, param):
-            global point, click, keyPoint, tAwal, tAkhir, indexClick, rowIndicator, cache, image, tAwalTemp, tAkhirTemp
+            global point, click, keyPoint, tAwal, tAkhir, indexClick, rowIndicator, cache, image, count
 
             if event == cv2.EVENT_LBUTTONDOWN:
-                cache = np.copy(image)
-
-                tAwalTemp = tAwal
-                tAkhirTemp = tAkhir
 
                 rowIndicator = rowIndicator + 1
                 point = (x, y)
@@ -390,25 +402,32 @@ class Detection:
                     cv2.line(image, keyPoint[tAwal], keyPoint[tAkhir], (0, 0, 255), 2)
                     cv2.line(image, keyPoint[tAwal - 2], keyPoint[tAkhir], (0, 0, 255), 2)
                     click = 1
+
                 # Deteksi jika sudah memenuhi jumlah slot, maka move ke row/shaf berikutnya
                 # PAKAI ARITMATIKA a+(n-1)*b menjadi 2+2.n
                 if rowIndicator == (2 + 2 * (jumlahSlot[row])):
                     print(rowIndicator)
                     print('DONE')
 
+                count = count + 1
+                tempp = np.copy(image)
+                cache[count] = np.copy(tempp)
+
             if event == cv2.EVENT_RBUTTONDOWN:
                 # HOW TO DELETE?
-                image = np.copy(cache)
+                image = np.copy(cache[count - 1])
                 if click == 1:
                     click = 3
                 click = click - 1
-                tAwal = tAwalTemp
-                tAkhir = tAkhirTemp
+                if tAwal != 0:
+                    tAwal = tAwal - 1
+                    tAkhir = tAkhir - 1
                 del keyPoint[-1]
+                count = count - 1
+
+        # Mulai plot slot
 
         for row in range(len(jumlahSlot)):
-            # undoImage = image
-            # undoCheck = False
             rowIndicator = 0
             point = []
             keyPoint = []
@@ -416,14 +435,12 @@ class Detection:
             tAkhir = 0
             tAwal = 0
 
-            tAkhirTemp = 0
-            tAwalTemp = 0
+            global cache, count
 
-    #        global image
-    #        global cache
+            count = 0
 
-            image = original_clone.copy()
-            cache = np.copy(image)
+            cache = np.array([np.copy(image) for _ in range(99)])
+            tempp = np.copy(image)
 
             cv2.namedWindow('image')
             cv2.setMouseCallback('image', coordinate)
