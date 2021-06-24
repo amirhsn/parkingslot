@@ -381,7 +381,8 @@ class Detection:
         # PAKE INI
         def coordinate(event, x, y, flags, param):
             global point, click, keyPoint, tAwal, tAkhir, indexClick, rowIndicator, cache, image, count
-
+            for i in range(len(jumlahSlot)):
+                cv2.putText(image,'Slot baris ke-'+str(i+1)+' = '+str(jumlahSlot[i]),(20,20*(i+1)),font,1,(204,204,0),1,cv2.LINE_AA)
             if event == cv2.EVENT_LBUTTONDOWN:
 
                 rowIndicator = rowIndicator + 1

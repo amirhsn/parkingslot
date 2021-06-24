@@ -8,6 +8,7 @@ from PIL import ImageTk
 from PIL.ImageTk import PhotoImage
 from pendeteksian import *
 from gifPlay import MyLabel
+import sys
 #======================================================================
 
 coordinateDict = {'Dummy','Masih dummy','Dummy lagi'}
@@ -178,7 +179,7 @@ class Frame3(tk.Frame):
         f3Btn2.grid(row=3, column=2, padx=10, pady=10, ipady=1, ipadx=5)
         f3Btn3.grid(row=3, column=3, padx=10, pady=10, ipady=1, ipadx=5)
 
-        anim = MyLabel(self, 'gifz.gif')
+        anim = MyLabel(self, 'assets/gifz.gif')
         #anim.pack()
 
         anim.grid(row=1, column=2, padx=10, pady=10, columnspan=1)
@@ -302,7 +303,7 @@ class Frame7(tk.Frame):
         btn = tk.Button(self, text="Home", command= lambda : [controller.show_frame(Frame1)])
         btn.grid(row=3, column=7, padx='10', pady='10')
 
-        btn2 = Button(self, text="Pilih gambar input", command=lambda : [select_image(), self.load()])
+        btn2 = Button(self, text="Exit", command=lambda : [sys.exit()])
         btn2.grid(row=3, column=8, padx='10', pady='10')
 
 
@@ -404,4 +405,5 @@ class Frame7(tk.Frame):
 
 # run the GUI
 app = tkinterApp()
+app.title('Smart Parking System V1.0')
 app.mainloop()
