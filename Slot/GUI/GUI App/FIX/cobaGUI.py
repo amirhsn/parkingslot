@@ -6,6 +6,8 @@ from tkinter import filedialog
 from tkinter import ttk
 from PIL import ImageTk
 from PIL.ImageTk import PhotoImage
+from numpy.lib.type_check import imag
+from shapely.geometry.polygon import orient
 from pendeteksian import *
 from gifPlay import MyLabel
 import sys
@@ -79,19 +81,58 @@ class tkinterApp(tk.Tk):
 class Frame1(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        screenWidth = self.winfo_screenwidth()
+        screenHeight = self.winfo_screenheight()
 
-        f1LabelJudul = tk.Label(self, text='Aplikasi Pendeteksi Status Slot Parkir', padx=10, pady=10, fg='black',
-                             height=2, width=50, font=("Helvetica 16 bold"))
-        f1Label1 = tk.Label(self, text='Silahkan pilih menu yang diinginkan', padx=10, pady=10, fg='black', height=3,
-                         font=("Helvetica 14 bold"))
-        f1Btn1 = tk.Button(self, text='Inisialisasi Slot', width=20, height=2, font=("Helvetica 10 bold"),
-                        command = lambda : controller.refresh_frame(Frame2))
-        f1Btn2 = tk.Button(self, text='Deteksi Slot', width=20, height=2, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame6))
+        background_image= ImageTk.PhotoImage((Image.open('assets/frame1.png')).resize((screenWidth,screenHeight)))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        f1LabelJudul.grid(row=0, column=1, columnspan=2)
-        f1Label1.grid(row=1, column=1, columnspan=2)
-        f1Btn1.grid(row=2, column=1, pady=10)
-        f1Btn2.grid(row=2, column=2, pady=10)
+        """ logoPolbanImg  = ImageTk.PhotoImage((Image.open('assets/POLBAN.png')).resize((100,100)))
+        logoPolban = tk.Label(self, image = logoPolbanImg)
+        logoPolban.image = logoPolbanImg
+        logoPolban.configure(bg='#585858')
+
+        logoCarImg  = ImageTk.PhotoImage((Image.open('assets/SP-colour.png')).resize((100,100)))
+        logoCar = tk.Label(self, image = logoCarImg)
+        logoCar.image = logoCarImg
+        logoCar.configure(bg='#585858') """
+        
+        logoExitImg  = ImageTk.PhotoImage((Image.open('assets/exit.png')).resize((80,80)))
+        logoExit = tk.Label(self, image = logoExitImg)
+        logoExit.image = logoExitImg
+
+        exitButton = tk.Button(self, image=logoExitImg, borderwidth=0, command=lambda : [sys.exit()])
+        exitButton.configure(bg='#3b3b3b')
+        """ f1LabelJudul1 = tk.Label(self, text='Aplikasi Pendeteksi \nStatus Slot Parkir', padx=10, fg='white',
+                             height=2, width=50, font=("Helvetica 30 bold"))
+        f1LabelJudul1.configure(bg='#585858') """
+        #f1LabelJudul2 = tk.Label(self, text='Status Slot Parkir', padx=10, fg='#ff6200',
+        #                     height=2, width=50, font=("Helvetica 30 bold"))              
+        #f1Label1 = tk.Label(self, text='Silahkan pilih menu yang diinginkan', padx=10, pady=10, fg='black', height=3,
+        #                 font=("Helvetica 14 bold"))
+        inisImg  = ImageTk.PhotoImage((Image.open('assets/inis.png')).resize((250,80)))
+        inis = tk.Label(self, image = inisImg)
+        inis.image = inisImg
+        f1Btn1 = tk.Button(self, image=inisImg, font=("Helvetica 20 bold"),
+                        command = lambda : controller.refresh_frame(Frame2), bg='#474747', borderwidth=0)
+
+        detImg  = ImageTk.PhotoImage((Image.open('assets/deteksi.png')).resize((250,80)))
+        det = tk.Label(self, image = detImg)
+        det.image = detImg
+        f1Btn2 = tk.Button(self, image=detImg, font=("Helvetica 20 bold"), 
+                        command = lambda : controller.refresh_frame(Frame6), bg='#3f3f3f', borderwidth=0)
+
+        """ logoPolban.grid(row=0, column=0, padx=30, pady=30)
+        logoCar.grid(row=0,column=7) """
+        exitButton.place(relx=0.83, rely=0.8, anchor=CENTER)
+
+        """ f1LabelJudul1.grid(row=0, column=4, columnspan=2) """
+        #f1LabelJudul2.grid(row=1, column=4, columnspan=2)
+        #f1Label1.grid(row=1, column=1, columnspan=2)
+        f1Btn1.place(relx=0.5,rely=0.5,anchor=CENTER)
+        f1Btn2.place(relx=0.5, rely=0.65, anchor=CENTER)
 
 class Frame2(tk.Frame):
 
@@ -100,11 +141,13 @@ class Frame2(tk.Frame):
         if row == 10:
             return None
         row = row + 1
-        rowLabel["%s"%row] = Label(self,text='Jumlah slot baris ke-'+str(row)+'=',padx=10,pady=10,font=('Helvetica 10 bold'))
+        rowLabel["%s"%row] = Label(self,text='Jumlah slot baris ke-'+str(row)+'=',padx=10,pady=10,font=('Helvetica 10 bold'), bg='#494949', fg='white')
         rowEntry["%s"%row] = Entry(self,bd=5)
 
-        rowLabel["%s"%row].grid(row=row+2,column=0)
-        rowEntry["%s"%row].grid(row=row+2,column=1)
+        """ rowLabel["%s"%row].grid(row=row+2,column=2)
+        rowEntry["%s"%row].grid(row=row+2,column=3) """
+        rowLabel["%s"%row].place(relx=0.27, rely=0.35+(row*0.04), anchor=CENTER)
+        rowEntry["%s"%row].place(relx=0.38, rely=0.35+(row*0.04), anchor=CENTER)
     def delRow(self):
         global row,rowLabel,rowEntry
         if row == 0 :
@@ -129,60 +172,101 @@ class Frame2(tk.Frame):
         rowLabel = {}
         rowEntry = {}
         tk.Frame.__init__(self, parent)
-        f2Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame1))
-        f2Label1 = tk.Label(self, text="Masukkan jumlah slot parkir pada setiap barisnya", padx=10, pady=10,
-                         font=('Helvetica 12 bold'))
+        screenWidth = self.winfo_screenwidth()
+        screenHeight = self.winfo_screenheight()
 
-        f2Btn2 = tk.Button(self, text='Hapus baris', padx=10, pady=10, fg='black', height=1, width=10,
-                        font=("Helvetica 10 bold"), command=self.delRow)
-        f2Btn3 = tk.Button(self, text='Tambah baris', padx=10, pady=10, fg='black', height=1, width=10,
-                        font=("Helvetica 10 bold"), command=self.addRow)
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')).resize((screenWidth,screenHeight)))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        f2Btn4 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = lambda : [self.storeValue(), controller.refresh_frame(Frame3)])
+        logoBackImg  = ImageTk.PhotoImage((Image.open('assets/back.png')).resize((80,80)))
+        logoBack = tk.Label(self, image = logoBackImg)
+        logoBack.image = logoBackImg
 
-        f2Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
-        f2Label1.grid(row=1, column=0, columnspan=4, padx=6, pady=6)
-        f2Btn2.grid(row=2, column=0, padx=8, pady=8,ipady=1, ipadx=10)
-        f2Btn3.grid(row=2, column=1, padx=8, pady=8, ipady=1, ipadx=10)
-        f2Btn4.grid(row=13, column=1, padx=8, pady=8, ipady=1, ipadx=15)
+        backButton = tk.Button(self, image=logoBackImg, bg="#585858", borderwidth=0, command=lambda : controller.show_frame(Frame1))
+
+        #f2Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
+        #                font=("Helvetica 10 bold"), command = lambda : controller.show_frame(Frame1))
+        f2Label1 = tk.Label(self, text="Masukkan jumlah slot parkir\n pada setiap barisnya", padx=10, pady=10,
+                         font=('Helvetica 30 bold'), bg='#585858', fg='white')
+
+        hapusImg  = ImageTk.PhotoImage((Image.open('assets/hapus.png')).resize((100,40)))
+        hapus = tk.Label(self, image = hapusImg)
+        hapus.image = hapusImg
+
+        f2Btn2 = tk.Button(self, image=hapusImg, padx=10, pady=10, fg='black',
+                        font=("Helvetica 10 bold"), borderwidth=0, bg='#494949',command=self.delRow)
+
+        tambahImg  = ImageTk.PhotoImage((Image.open('assets/tambah.png')).resize((100,40)))
+        tambah = tk.Label(self, image = tambahImg)
+        tambah.image = tambahImg
+
+        f2Btn3 = tk.Button(self, image=tambahImg, padx=10, pady=10, fg='black',
+                        font=("Helvetica 10 bold"), borderwidth='0', bg='#494949',command=self.addRow)
+
+        nextImg  = ImageTk.PhotoImage((Image.open('assets/berikutnya.png')).resize((250,80)))
+        next = tk.Label(self, image = nextImg)
+        next.image = nextImg
+
+        f2Btn4 = tk.Button(self, image=nextImg, padx=10, pady=10, fg='black',
+                        font=("Helvetica 10 bold"), borderwidth='0', bg='#363636',command = lambda : [self.storeValue(), controller.refresh_frame(Frame3)])
+
+        #f2Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
+        backButton.place(relx=0.16, rely=0.2, anchor=CENTER)
+        f2Label1.place(relx=0.37, rely=0.205, anchor=CENTER)
+        f2Btn2.place(relx=0.25, rely=0.3, anchor=CENTER)
+        f2Btn3.place(relx=0.35, rely=0.3, anchor=CENTER)
+        f2Btn4.place(relx=0.77, rely=0.81, anchor=CENTER)
 
 class Frame3(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        screenWidth = self.winfo_screenwidth()
+        screenHeight = self.winfo_screenheight()
 
-        f3Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"),command = lambda : controller.refresh_frame(Frame2))
-        f3Label1 = tk.Label(self, text="Silahkan melakukan inisialisasi slot \ndengan klik kiri pada ujung slot \nseperti contoh berikut", padx=10, pady=10,
-                         font=('Helvetica 12 bold'))
-        f3Label2 = tk.Label(self, text="Apabila terdapat salah klik, klik \nkanan mouse untuk kembali \nTekan c untuk ke baris selanjutnya", padx=10,
-                         pady=10, font=('Helvetica 12 bold'))
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')).resize((screenWidth,screenHeight)))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+        logoBackImg  = ImageTk.PhotoImage((Image.open('assets/back.png')).resize((80,80)))
+        logoBack = tk.Label(self, image = logoBackImg)
+        logoBack.image = logoBackImg
+        backButton = tk.Button(self, image=logoBackImg, bg="#585858", borderwidth=0, command=lambda : controller.show_frame(Frame2))
 
-        f3Btn2 = tk.Button(self, text='Upload gambar', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command=select_image)
+        f3Label1 = tk.Label(self, text="Silahkan melakukan inisialisasi\n slot parkir seperti contoh berikut", padx=10, pady=10,
+                         font=('Helvetica 30 bold'), bg='#585858', fg='white')
+        f3Label2 = tk.Label(self, text="Apabila terdapat salah klik, klik \nkanan mouse untuk undo \n Tekan 'C' untuk ke baris selanjutnya", padx=10,
+                         pady=10, font=('Helvetica 20 bold'), bg='#444444', fg='#ff6200')
 
-        f3Btn3 = tk.Button(self, text='Berikutnya', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command=lambda : controller.refresh_frame(Frame4))
+        uploadImg  = ImageTk.PhotoImage((Image.open('assets/upload.png')).resize((250,80)))
+        upload = tk.Label(self, image = uploadImg)
+        upload.image = uploadImg
+        f3Btn2 = tk.Button(self, image=uploadImg, padx=10, pady=10, fg='black', 
+                        font=("Helvetica 10 bold"), borderwidth=0, bg='#363636',command=select_image)
+
+        nextImg  = ImageTk.PhotoImage((Image.open('assets/berikutnya.png')).resize((250,80)))
+        next = tk.Label(self, image = nextImg)
+        next.image = nextImg
+        f3Btn3 = tk.Button(self, image=nextImg, padx=10, pady=10, fg='black', 
+                        font=("Helvetica 10 bold"), borderwidth=0, bg='#363636',command=lambda : controller.refresh_frame(Frame4))
 
                     
 
-        f3Btn1.grid(row=0, column=0, padx=10, pady=10, ipady=1, ipadx=5)
+        backButton.place(relx=0.16, rely=0.2, anchor=CENTER)
 
-        f3Btn1.grid(row=0, column=0, padx=10, pady=10)
-
-        f3Label1.grid(row=1, column=0, columnspan=2, padx=6, pady=6)
-        f3Label2.grid(row=3, column=0, columnspan=2, padx=6, pady=6)
+        f3Label1.place(relx=0.4, rely=0.205, anchor=CENTER)
+        f3Label2.place(relx=0.6, rely=0.5, anchor=CENTER)
 
 
-        f3Btn2.grid(row=3, column=2, padx=10, pady=10, ipady=1, ipadx=5)
-        f3Btn3.grid(row=3, column=3, padx=10, pady=10, ipady=1, ipadx=5)
+        f3Btn2.place(relx=0.28, rely=0.81, anchor=CENTER)
+        f3Btn3.place(relx=0.77, rely=0.81, anchor=CENTER)
 
         anim = MyLabel(self, 'assets/gifz.gif')
         #anim.pack()
 
-        anim.grid(row=1, column=2, padx=10, pady=10, columnspan=1)
+        anim.place(relx=0.28, rely=0.5, anchor=CENTER)
 
         
 
@@ -206,39 +290,73 @@ class Frame4(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        f4Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                        font=("Helvetica 10 bold"),command = lambda : controller.refresh_frame(Frame3))
-        f4Btn2 = tk.Button(self, text='Mulai', padx=10, pady=10, fg='black', height=1, width=15,
-                        font=("Helvetica 10 bold"), command = self.getROISlot)
-        f4Btn3 = tk.Button(self, text='Selesai', padx=10, pady=10, fg='black', height=1, width=15,
+        screenWidth = self.winfo_screenwidth()
+        screenHeight = self.winfo_screenheight()
+
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')).resize((screenWidth,screenHeight)))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        logoBackImg  = ImageTk.PhotoImage((Image.open('assets/back.png')).resize((80,80)))
+        logoBack = tk.Label(self, image = logoBackImg)
+        logoBack.image = logoBackImg
+        f4Btn1 = tk.Button(self, image=logoBackImg, bg="#585858", borderwidth=0, command=lambda : controller.refresh_frame(Frame3))
+
+        mulaiImg  = ImageTk.PhotoImage((Image.open('assets/mulai.png')).resize((250,80)))
+        mulai = tk.Label(self, image = mulaiImg)
+        mulai.image = mulaiImg
+        f4Btn2 = tk.Button(self, image=mulaiImg, padx=10, pady=10, bg='#505050', borderwidth=0,
+                        font=("Helvetica 10 bold"), command = self.getROISlot, )
+        
+        selesaiImg  = ImageTk.PhotoImage((Image.open('assets/selesai.png')).resize((250,80)))
+        selesai = tk.Label(self, image = selesaiImg)
+        selesai.image = selesaiImg
+        f4Btn3 = tk.Button(self, image=selesaiImg, padx=10, pady=10, bg='#363636', borderwidth=0,
                         font=("Helvetica 10 bold"), command= lambda : [self.saveKoordinat(), self.clear(), controller.refresh_frame(Frame5)])
         
         self.f4Label1 = tk.Label(self, text='Silahkan untuk mulai inisialisasi', padx=10,
-                         pady=10, font=('Helvetica 12 bold')) 
-        f4Label2 = tk.Label(self, text="Nama area observasi = ", padx=10,
-                         pady=10, font=('Helvetica 12 bold'))  
-        self.f4Entry1 = tk.Entry(self, bd=5)                                               
-        f4Btn1.grid(row=0,column=0, padx=8, pady=8, ipady=1, ipadx=15)
-        self.f4Label1.grid(row=1,column=2,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
-        f4Label2.grid(row=4,column=1,columnspan=4, padx=8, pady=8, ipady=1, ipadx=15)
-        f4Btn2.grid(row=3, column=3, padx=8, pady=8, ipady=1, ipadx=15)
-        f4Btn3.grid(row=5, column=3, padx=8, pady=8, ipady=1, ipadx=15)
-        self.f4Entry1.grid(row=4,column=5,columnspan=2, padx=8, pady=8, ipady=1, ipadx=15)
+                         pady=10, font=('Helvetica 25 bold'),fg='white',bg='#555555') 
+        f4Label2 = tk.Label(self, text="Nama area = ", padx=10,
+                         pady=10, font=('Helvetica 20 bold'), bg='#424242', fg='white')  
+        self.f4Entry1 = tk.Entry(self, bd=5)   
+
+        f4Btn1.place(relx=0.16, rely=0.2, anchor=CENTER)
+        self.f4Label1.place(relx=0.4, rely=0.205, anchor=CENTER)
+        f4Label2.place(relx=0.45, rely=0.5, anchor=CENTER)
+        f4Btn2.place(relx=0.5, rely=0.38, anchor=CENTER)
+        f4Btn3.place(relx=0.77, rely=0.81, anchor=CENTER)
+        self.f4Entry1.place(relx=0.55, rely=0.5, anchor=CENTER)
 
 class Frame5(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan nama " + namaFile +"\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 14 bold'))
-        f5Label2 = tk.Label(self, text="Apakah anda ingin melakukan inisialisasi area parkir lainnya?",padx=10,pady=10,font=('Helvetica 14 bold'))
-        f5Btn1 = tk.Button(self, text='Ya', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame2))
-        f5Btn2 = tk.Button(self, text='Tidak', padx=10, pady=10, fg='black', height=1, width=8, font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame6))
+        f5Label1 = tk.Label(self, text="Koordinat slot parkir dengan\nnama " + namaFile +"\ntelah berhasil disimpan.",padx=10,pady=10,font=('Helvetica 35 bold'),bg='#474747', fg='white')
+        f5Label2 = tk.Label(self, text="Apakah anda ingin melakukan\ninisialisasi area parkir lainnya?",padx=10,pady=10,font=('Helvetica 35 bold'), fg='#ff6200',bg='#424242')
 
-        f5Label1.grid(row=0,column=0,columnspan=4,padx=15,pady=15)
-        f5Label2.grid(row=1,column=0,columnspan=4,padx=15,pady=15)
-        f5Btn1.grid(row=2,column=1,padx=15,pady=15)
-        f5Btn2.grid(row=2,column=2,padx=15,pady=15)
+        yesImg  = ImageTk.PhotoImage((Image.open('assets/ya.png')).resize((250,80)))
+        yes = tk.Label(self, image = yesImg)
+        yes.image = yesImg
+        f5Btn1 = tk.Button(self, image=yesImg, bg="#383838", borderwidth=0, command=lambda : controller.refresh_frame(Frame2))
 
+        noImg  = ImageTk.PhotoImage((Image.open('assets/tidak.png')).resize((250,80)))
+        no = tk.Label(self, image = noImg)
+        no.image = noImg
+        f5Btn2 = tk.Button(self, image=noImg, bg="#383838", borderwidth=0, command=lambda : controller.refresh_frame(Frame6))
+
+        """ f5Label1.grid(row=0,column=2,columnspan=4,padx=15,pady=15)
+        f5Label2.grid(row=1,column=2,columnspan=4,padx=15,pady=15)
+        f5Btn1.grid(row=2,column=6,padx=15,pady=15)
+        f5Btn2.grid(row=2,column=7,padx=15,pady=15) """
+        f5Label1.place(relx=0.5, rely=0.3, anchor=CENTER)
+        f5Label2.place(relx=0.5, rely=0.5, anchor=CENTER)
+        f5Btn1.place(relx=0.35, rely=0.75, anchor=CENTER)
+        f5Btn2.place(relx=0.65, rely=0.75, anchor=CENTER)
 
 class Frame6(tk.Frame):
     def __init__(self, parent, controller):
@@ -254,11 +372,21 @@ class Frame6(tk.Frame):
         #os.chdir(curdir+)
 
         tk.Frame.__init__(self, parent)
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        f6Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
-                            font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame1))
+        logoBackImg  = ImageTk.PhotoImage((Image.open('assets/back.png')).resize((80,80)))
+        logoBack = tk.Label(self, image = logoBackImg)
+        logoBack.image = logoBackImg
+
+        backButton = tk.Button(self, image=logoBackImg, command=lambda : controller.show_frame(Frame1))
+
+        #f6Btn1 = tk.Button(self, text='Back', padx=10, pady=10, fg='black', height=1, width=5,
+        #                    font=("Helvetica 10 bold"), command = lambda : controller.refresh_frame(Frame1))
         f6Label1 = tk.Label(self, text="Silahkan pilih area observasi", padx=10, pady=10,
-                             font=('Helvetica 14 bold'))
+                             font=('Helvetica 30 bold'))
 
         value_inside = tk.StringVar(self)
         value_inside.set("Select an Option")
@@ -285,9 +413,9 @@ class Frame6(tk.Frame):
         f6Btn3 = tk.Button(self, text='Berikutnya', padx=25, pady=10, fg='black', height=1, width=15,
                             font=("Helvetica 10 bold"), command = lambda : [get_coordinate(), controller.refresh_frame(Frame7)])
 
-        f6Btn1.grid(row=0, column=0, padx=10, pady=10)
-        f6Label1.grid(row=1, column=0, columnspan=4, padx=10, pady=15)
-        f6DropDown.grid(row=2, column=0, rowspan=2, padx=10, pady=15)
+        backButton.grid(row=0, column=0, padx=10, pady=10)
+        f6Label1.grid(row=1, column=1, columnspan=4, padx=10, pady=15)
+        f6DropDown.grid(row=2, column=1, rowspan=2, padx=10, pady=15)
         f6Btn2.grid(row=5, column=1, pady=20, padx=10)
         f6Btn3.grid(row=5, column=2, pady=20, padx=25)
 
@@ -295,6 +423,10 @@ class Frame6(tk.Frame):
 class Frame7(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        background_image= ImageTk.PhotoImage((Image.open('assets/bg.png')))
+        background_label = tk.Label(self, image=background_image)
+        background_label.image = background_image
+        background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
         global inputText, outputText
         global slot1Text, slot2Text, slot3Text, slot1Result, slot2Result, slot3Result
@@ -405,5 +537,7 @@ class Frame7(tk.Frame):
 
 # run the GUI
 app = tkinterApp()
+app.attributes('-fullscreen',True)
 app.title('Smart Parking System V1.0')
+#app.wm_attributes('-transparentcolor', app['bg'])
 app.mainloop()
